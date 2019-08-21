@@ -29,10 +29,10 @@ module Enumerable
     end
     
     def my_any?
-        self.my_each do |e|
-          return true if yield(e)
+        self.my_each do |x|
+          return true if yield(x)
         end
-        true
+        false
     end
     
 
@@ -42,14 +42,16 @@ module Enumerable
         num
     end
 
-    def my_count(obj = nil)
+    def my_count num = nil
         count = 0
-        my_each do |e|
-          count += 1
-          return count if obj && count == obj
-          return count if block_given? && yield(e)
-        end
-        return count unless block_given?
+          if num 
+            self.my_each {|elem| count += 1 if elem == num}
+          elsif block_given?
+            self.my_each {|elem| count += 1 if yield(elem)}
+          else
+            count = self.length
+          end 
+        count
     end
 
     def my_map
@@ -79,18 +81,15 @@ module Enumerable
     end
 
 end
-=begin
-arr = [5,12,9,2,3,60,76,100]    
-val = Proc.new {|x| x%2 == 0}
 
-p arr.my_any?(&val)
 
-p arr.any?(&val)
+arr = [5,12,9,2,3,60,76,100] 
 
-puts "my_count no argument: " + arr.my_count.to_s
+p "Test 1==> #{arr.my_count} "
+p "Test 2==> #{ arr.my_count(2)} "
+p "Test 3==> #{arr.my_count {|num| num < 5}}"
 
-puts "my_count with block: " + arr.my_count{val }.to_s
-
-puts "No argument: " + arr.my_inject{|x,y| x + y}.to_s 
-=end
-
+  p arr.any? {|num| num.is_a? Integer}
+  p arr.any? {|num| num.is_a? String}
+  p arr.my_any? {|num| num.is_a? Integer}
+  p arr.my_any? {|num| num.is_a? String}
