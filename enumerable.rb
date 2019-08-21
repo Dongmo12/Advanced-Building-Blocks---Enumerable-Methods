@@ -23,19 +23,18 @@ module Enumerable
     end
 
     def my_all?
-        self.my_each do |x|
-        return true unless block_given?
-        return false unless yield(x)
-        end
+        initial = false
+        self.my_each {|elem| yield(elem) ? initial = true : initial = false }
+        initial
     end
     
     def my_any?
-        m = false
-        self.my_each do |x|
-            (m = true) if yield(x)
+        self.my_each do |e|
+          return true if yield(e)
         end
-        m
+        true
     end
+    
 
     def my_none?
         num = true
@@ -43,12 +42,14 @@ module Enumerable
         num
     end
 
-    def my_count
-        c = 0
-        self.my_each do |x|
-            block_given? ? (c += 1 if yield(x)) : c += 1
+    def my_count(obj = nil)
+        count = 0
+        my_each do |e|
+          count += 1
+          return count if obj && count == obj
+          return count if block_given? && yield(e)
         end
-        c
+        return count unless block_given?
     end
 
     def my_map
@@ -58,18 +59,27 @@ module Enumerable
         end
         array
     end
+
+    def my_inject 
+        start = nil
+        start == nil ? result = self[0] : result = start
+    
+        for i in 1..self.length - 1 
+          result = yield(result,self[i])
+        end 
+        result
+    end
+    
+
         
-    def my_inject (val = self[0]) 
-        object = val
-        self.my_each do |x|
-            object = yield(val,x)
-            val = object 
-        end
-        object
+    def multiply_els(arr)
+
+        arr.my_inject { |memo, e| memo * e }
+  
     end
 
 end
-
+=begin
 arr = [5,12,9,2,3,60,76,100]    
 val = Proc.new {|x| x%2 == 0}
 
@@ -82,3 +92,5 @@ puts "my_count no argument: " + arr.my_count.to_s
 puts "my_count with block: " + arr.my_count{val }.to_s
 
 puts "No argument: " + arr.my_inject{|x,y| x + y}.to_s 
+=end
+
